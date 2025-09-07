@@ -2,7 +2,7 @@
 
 Servidor MCP que combina herramientas locales (tools) y un modelo de lenguaje Ollama llama3 para responder preguntas en lenguaje natural.  
 Permite que los usuarios hagan preguntas libres y el servidor decide si usar un tool específico o enviar la consulta al modelo de lenguaje.
-
+La idea principal es crear un chatbot que pueda usar funcionalidades del gestor de tareas Zenstasker a traves de los tools ademas de añadir una ia al programa.
 ---
 
 ## Funcionalidades
