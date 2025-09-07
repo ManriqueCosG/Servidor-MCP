@@ -1,136 +1,116 @@
-# Servidor MCP - Proyecto de ejemplo
+# Servidor MCP
 
-Este proyecto es un servidor HTTP que permite invocar **herramientas (tools)** a través de endpoints REST y también responder a **preguntas en lenguaje natural**. Está pensado como un proyecto base para un **servidor MCP** (Model Context Protocol).
+Servidor MCP que combina herramientas locales (tools) y un modelo de lenguaje Ollama llama3 para responder preguntas en lenguaje natural.  
+Permite que los usuarios hagan preguntas libres y el servidor decide si usar un tool específico o enviar la consulta al modelo de lenguaje.
+
+---
+
+## Funcionalidades
+
+- Tools integrados:
+  - `saludar` → saluda a la persona indicada.
+  - `contar_palabras` → cuenta palabras de un texto.
+  - `clima` → devuelve el clima de una ciudad.
+- Preguntas en lenguaje natural:
+  - El servidor decide si usar un tool o pasar la pregunta a Ollama.
+- Cada respuesta incluye un campo `source` indicando su origen (`tool:clima`, `tool:saludar`, `tool:contar_palabras` o `ollama`).
+- Cliente interactivo en consola para preguntar en tiempo real.
 
 ---
 
 ## Estructura del proyecto
 
-```
-Servidor-mcp/
+Servidor-MCP/
 │
-├─ index.js                 # Servidor principal
-├─ test_client.js           # Cliente de prueba para /invoke/:tool
-├─ preguntas_client.js      # Cliente interactivo para /preguntar (opcional)
-├─ package.json
-└─ tools/
-    ├─ saludar.js           # Tool: saluda a un nombre
-    ├─ contar_palabras.js   # Tool: cuenta palabras en un texto
-    └─ clima.js             # Tool: devuelve clima de una ciudad
-```
+├─ index.js # Servidor principal
+├─ preguntas_client.js # Cliente interactivo
+├─ tools/
+│ ├─ saludar.js # Tool para saludar
+│ ├─ contar_palabras.js # Tool para contar palabras
+│ └─ clima.js # Tool para consultar clima
+├─ package.json # Dependencias
+└─ README.md
 
----
-
-## Requisitos
-
-* Node.js v18 o superior
-* npm
-* Windows, Linux o macOS
+yaml
+Copiar código
 
 ---
 
 ## Instalación
 
-1. Clona o descarga el proyecto.
-2. Abre la terminal en la carpeta del proyecto.
-3. Instala las dependencias:
-
+1. Clonar el repositorio:
 ```bash
-npm install express body-parser node-fetch
-```
+git clone https://github.com/tu-usuario/Servidor-MCP.git
+cd Servidor-MCP
+Instalar dependencias:
 
-4. Asegúrate de que tu `package.json` tenga:
+bash
+Copiar código
+npm install
+Instalar Ollama y descargar el modelo llama3:
 
-```json
-{
-  "type": "module"
-}
-```
+bash
+Copiar código
+ollama run llama3
+Uso
+Levantar el servidor MCP:
 
-Esto permite usar **import/export** de ES6.
-
----
-
-## Ejecutar el servidor
-
-```bash
+bash
+Copiar código
 node index.js
-```
+El servidor escucha en: http://localhost:4000
 
-Salida esperada:
+Abrir el cliente interactivo:
 
-```
-Servidor MCP HTTP corriendo en http://localhost:4000
-```
+bash
+Copiar código
+node preguntas_client.js
+Escribir preguntas de ejemplo:
 
----
+less
+Copiar código
+Qué clima hace hoy en Madrid?
+Respuesta [tool:clima]: El clima en Madrid es 25°C y soleado
 
+Hola Manri
+Respuesta [tool:saludar]: Hola, Manri
 
+Cuántas palabras tiene este texto
+Respuesta [tool:contar_palabras]: 6 palabras
 
-## Endpoints del servidor
+Explícame qué es Node.js
+Respuesta [ollama]: Node.js es un entorno de ejecución de JavaScript...
+Funcionamiento interno
+El servidor recibe la pregunta vía POST /preguntar.
 
-### 1. Invocar herramienta directamente
+Analiza la pregunta:
 
-**POST** `/invoke/:tool`
+Si coincide con un tool, ejecuta el tool.
 
-* URL: `http://localhost:4000/invoke/saludar`
-* Body (JSON):
+Si no, envía la pregunta a Ollama llama3.
 
-```json
+Devuelve un JSON con:
+
+json
+Copiar código
 {
-  "nombre": "Manri"
+  "output": "Respuesta generada",
+  "source": "tool:clima" // o tool:saludar, tool:contar_palabras, ollama
 }
-```
+Mejoras futuras
+Añadir más tools personalizadas.
 
----
+Guardar historial de preguntas y respuestas en la sesión.
 
-### 2. Preguntar en lenguaje natural
+Crear interfaz web para interacción más visual.
 
-**POST** `/preguntar`
+Añadir soporte para múltiples usuarios simultáneos.
 
-* URL: `http://localhost:4000/preguntar`
-* Body (JSON):
+Referencias
+Ollama
 
-```json
-{
-  "pregunta": "Qué clima hace hoy en Madrid?"
-}
-```
+Node.js
 
-* El servidor detecta palabras clave y llama a la herramienta correspondiente (`clima`, `saludar`, `contar_palabras`).
+Express.js
 
----
-
-## Cliente de prueba (Node.js)
-
-### `test_client.js`
-
-Prueba las herramientas directamente usando `/invoke/:tool`.
-
-### `preguntas_client.js` (opcional)
-
-Permite enviar preguntas en lenguaje natural al endpoint `/preguntar`.
-
-```js
-await preguntar("Qué clima hace hoy en Madrid?");
-await preguntar("Hola Manri");
-await preguntar("Cuántas palabras tiene este texto de ejemplo");
-```
-
----
-
-## Notas importantes
-
-* En **Postman**, asegúrate de:
-
-  * Método **POST**
-  * URL correcta: `http://localhost:4000/preguntar`
-  * Body → **raw → JSON**
-
-* En Windows PowerShell, si quieres probar rápido:
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:4000/preguntar" -Method POST -Body '{"pregunta":"Qué clima hace hoy en Madrid?"}' -ContentType "application/json"
-```
-
-* No uses saltos de línea o espacios al final de la URL (`%0A` causará errores).
+node-fetch
