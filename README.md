@@ -4,7 +4,7 @@ Este proyecto es un servidor HTTP que permite invocar **herramientas (tools)** a
 
 ---
 
-## 📂 Estructura del proyecto
+## Estructura del proyecto
 
 ```
 Servidor-mcp/
@@ -21,7 +21,7 @@ Servidor-mcp/
 
 ---
 
-## ⚡ Requisitos
+## Requisitos
 
 * Node.js v18 o superior
 * npm
@@ -29,7 +29,7 @@ Servidor-mcp/
 
 ---
 
-## 🔧 Instalación
+## Instalación
 
 1. Clona o descarga el proyecto.
 2. Abre la terminal en la carpeta del proyecto.
@@ -51,7 +51,7 @@ Esto permite usar **import/export** de ES6.
 
 ---
 
-## 🚀 Ejecutar el servidor
+## Ejecutar el servidor
 
 ```bash
 node index.js
@@ -65,38 +65,9 @@ Servidor MCP HTTP corriendo en http://localhost:4000
 
 ---
 
-## 🛠 Herramientas disponibles
 
-### 1. Saludar
 
-```js
-import { saludar } from "./tools/saludar.js";
-
-saludar({ nombre: "Manri" });
-// Devuelve: "¡Hola Manri! Soy tu servidor MCP 🚀"
-```
-
-### 2. Contar palabras
-
-```js
-import { contar_palabras } from "./tools/contar_palabras.js";
-
-contar_palabras({ texto: "Hola mundo desde MCP" });
-// Devuelve: "El texto tiene 4 palabras."
-```
-
-### 3. Clima
-
-```js
-import { clima } from "./tools/clima.js";
-
-await clima({ ciudad: "Madrid" });
-// Devuelve: "El clima en Madrid es soleado y 25°C 🌞"
-```
-
----
-
-## 🔹 Endpoints del servidor
+## Endpoints del servidor
 
 ### 1. Invocar herramienta directamente
 
@@ -130,7 +101,7 @@ await clima({ ciudad: "Madrid" });
 
 ---
 
-## 💻 Cliente de prueba (Node.js)
+## Cliente de prueba (Node.js)
 
 ### `test_client.js`
 
@@ -148,7 +119,7 @@ await preguntar("Cuántas palabras tiene este texto de ejemplo");
 
 ---
 
-## 📝 Notas importantes
+## Notas importantes
 
 * En **Postman**, asegúrate de:
 

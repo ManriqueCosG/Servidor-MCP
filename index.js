@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import fetch from "node-fetch"; // para llamar a Ollama
 import { saludar } from "./tools/saludar.js";
 import { contar_palabras } from "./tools/contar_palabras.js";
 import { clima } from "./tools/clima.js";
@@ -9,53 +10,56 @@ const PORT = 4000;
 
 app.use(bodyParser.json());
 
-const tools = {
-  saludar,
-  contar_palabras,
-  clima
-};
+const tools = { saludar, contar_palabras, clima };
 
-// Endpoint para invocar herramientas directamente
-app.post("/invoke/:tool", async (req, res) => {
-  const toolName = req.params.tool;
-  const input = req.body;
-
-  if (tools[toolName]) {
-    try {
-      const output = await tools[toolName](input);
-      res.json({ output });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  } else {
-    res.status(404).json({ error: "Herramienta no encontrada" });
-  }
-});
-
-// ✅ Nuevo endpoint para preguntas en lenguaje natural
+// Endpoint de preguntas en lenguaje natural
 app.post("/preguntar", async (req, res) => {
   const { pregunta } = req.body;
   let respuesta;
+  let source = "ollama"; // por defecto
 
-  // Analizar la pregunta para decidir herramienta
-  if (/clima/i.test(pregunta)) {
-    // Extraer ciudad (simple, ejemplo)
-    const ciudadMatch = pregunta.match(/en (\w+)/i);
-    const ciudad = ciudadMatch ? ciudadMatch[1] : "Madrid";
-    respuesta = await clima({ ciudad });
-  } else if (/hola|saludar/i.test(pregunta)) {
-    const nombreMatch = pregunta.match(/hola (\w+)/i);
-    const nombre = nombreMatch ? nombreMatch[1] : "amigo";
-    respuesta = saludar({ nombre });
-  } else if (/palabras/i.test(pregunta)) {
-    respuesta = contar_palabras({ texto: pregunta });
-  } else {
-    respuesta = "No sé cómo responder esa pregunta 😅";
+  try {
+    if (/clima/i.test(pregunta)) {
+      const ciudadMatch = pregunta.match(/en ([\wáéíóúÁÉÍÓÚ]+)/i);
+      const ciudad = ciudadMatch ? ciudadMatch[1] : "Madrid";
+      respuesta = await clima({ ciudad });
+      source = "tool:clima";
+
+    } else if (/hola|saludar/i.test(pregunta)) {
+      const nombreMatch = pregunta.match(/hola (\w+)/i);
+      const nombre = nombreMatch ? nombreMatch[1] : "amigo";
+      respuesta = saludar({ nombre });
+      source = "tool:saludar";
+
+    } else if (/palabras/i.test(pregunta)) {
+      respuesta = contar_palabras({ texto: pregunta });
+      source = "tool:contar_palabras";
+
+    } else {
+      const ollamaResponse = await fetch("http://localhost:11434/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama3",
+          prompt: pregunta,
+          stream: false  
+        })
+      });
+      
+      const data = await ollamaResponse.json();
+      respuesta = data.response; // ahora vendrá todo en un solo string
+      
+      source = "ollama";
+    }
+
+    res.json({ output: respuesta, source });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  res.json({ output: respuesta });
 });
 
+
 app.listen(PORT, () => {
-  console.log(`Servidor MCP HTTP corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor MCP corriendo en http://localhost:${PORT}`);
 });
